@@ -12,8 +12,9 @@ function App() {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
-	const [movieList, setMovieList] = useState<Movie[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [movieList, setMovieList] = useState<Movie[]>([]);
+	const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
 
 	useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
@@ -45,9 +46,34 @@ function App() {
 		}
 	}
 
+	const fetchTrendingMovies = async () => {
+		try {
+			const endpoint = `${API_BASE_URL}/trending/movie/day?api_key=${API_KEY}`;
+			const response = await fetch(endpoint);
+			if (!response.ok) {
+				console.log('Failed to fetch trending movies');
+			}
+
+			const data = await response.json();
+			if (data.Response === 'False') {
+				setErrorMessage(data.Error || 'Failed to fetch movies');
+				setTrendingMovies([]);
+				return;
+			}
+
+			setTrendingMovies(data.results?.filter((item: Movie, index: number) => (item && index < 10)) || []);
+		} catch (error) {
+			console.log(`Error fetching trending movies: ${error}`);
+		}
+	}
+
 	useEffect(() => {
 		fetchMovies(debouncedSearchTerm);
 	}, [debouncedSearchTerm]);
+
+	useEffect(() => {
+		fetchTrendingMovies();
+	}, []);
 
 	return (
 		<main>
@@ -58,8 +84,23 @@ function App() {
 					<h1>Find <span className="text-gradient">Movies</span> You'll Enjoy Without the Hassle</h1>
 					<Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 				</header>
+
+				{trendingMovies.length > 0 && (
+					<section className="trending">
+						<h2>Trending Movies</h2>
+						<ul>
+							{trendingMovies.map((movie: Movie, index: number) => (
+								<li key={movie.id}>
+									<p>{index + 1}</p>
+									<img src={movie.poster_path ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}` : '/no-movie.png'} alt={movie.title} />
+								</li>
+							))}
+						</ul>
+					</section>
+				)}
+
 				<section className="all-movies">
-					<h2 className="mt-[40px]">All Movies</h2>
+					<h2>All Movies</h2>
 					{isLoading ? (
 						<Spinner />
 					) : errorMessage ? (
