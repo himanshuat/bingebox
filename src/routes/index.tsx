@@ -1,14 +1,19 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from "react";
 import { useDebounce } from "react-use";
-import { Movie } from "./types";
-import Search from "./components/Search";
-import Spinner from "./components/Spinner";
-import MovieCard from "./components/MovieCard";
+import { Movie } from "../types";
+import Search from "../components/Search";
+import Spinner from "../components/Spinner";
+import MovieCard from "../components/MovieCard";
+
+export const Route = createFileRoute('/')({
+	component: Index,
+})
 
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
-function App() {
+function Index() {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
@@ -117,5 +122,3 @@ function App() {
 		</main>
 	)
 }
-
-export default App
