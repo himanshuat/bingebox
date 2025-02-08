@@ -65,7 +65,6 @@ function Index() {
 				setTrendingTitles([]);
 				return;
 			}
-			console.log(data.results);
 
 			setTrendingTitles(data.results?.filter((item: Title, index: number) => (item && index < 10)) || []);
 		} catch (error) {
@@ -82,8 +81,7 @@ function Index() {
 	}, []);
 
 	return (
-		<main>
-			<div className="pattern" />
+		<>
 			<div className="wrapper">
 				<header>
 					<img src="./hero.png" alt="Hero Banner" />
@@ -120,6 +118,6 @@ function Index() {
 					)}
 				</section>
 			</div>
-		</main>
+		</>
 	)
 }
