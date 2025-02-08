@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from "react";
 import { useDebounce } from "react-use";
-import { Movie } from "../types";
+import { Title } from "../types";
 import Search from "../components/Search";
 import Spinner from "../components/Spinner";
-import MovieCard from "../components/MovieCard";
+import TitleCard from "../components/TitleCard";
 
 export const Route = createFileRoute('/')({
 	component: Index,
@@ -18,66 +18,67 @@ function Index() {
 	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
-	const [movieList, setMovieList] = useState<Movie[]>([]);
-	const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
+	const [titleList, setTitleList] = useState<Title[]>([]);
+	const [trendingTitles, setTrendingTitles] = useState<Title[]>([]);
 
 	useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
-	const fetchMovies = async (query: string = '') => {
+	const fetchTitles = async (query: string = '') => {
 		setIsLoading(true);
 
 		try {
 			const endpoint = query
-				? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&api_key=${API_KEY}`
+				? `${API_BASE_URL}/search/multi?query=${encodeURIComponent(query)}&api_key=${API_KEY}`
 				: `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&api_key=${API_KEY}`;
 			const response = await fetch(endpoint);
 			if (!response.ok) {
-				throw new Error('Failed to fetch movies');
+				throw new Error('Failed to fetch titles');
 			}
 
 			const data = await response.json();
 			if (data.Response === 'False') {
-				setErrorMessage(data.Error || 'Failed to fetch movies');
-				setMovieList([]);
+				setErrorMessage(data.Error || 'Failed to fetch titles');
+				setTitleList([]);
 				return;
 			}
 
-			setMovieList(data.results || []);
+			setTitleList(data.results.filter((item: Title) => item.media_type === 'movie' || item.media_type === 'tv' || item.media_type === undefined) || []);
 		} catch (error) {
-			console.log(`Error fetching movies: ${error}`);
-			setErrorMessage('Error fetching movies. Please try again later.')
+			console.log(`Error fetching titles: ${error}`);
+			setErrorMessage('Error fetching titles. Please try again later.')
 		} finally {
 			setIsLoading(false);
 		}
 	}
 
-	const fetchTrendingMovies = async () => {
+	const fetchTrendingTitles = async () => {
 		try {
-			const endpoint = `${API_BASE_URL}/trending/movie/day?api_key=${API_KEY}`;
+			const endpoint = `${API_BASE_URL}/trending/all/day?api_key=${API_KEY}`;
 			const response = await fetch(endpoint);
 			if (!response.ok) {
-				console.log('Failed to fetch trending movies');
+				console.log('Failed to fetch trending titles');
 			}
 
 			const data = await response.json();
 			if (data.Response === 'False') {
-				setErrorMessage(data.Error || 'Failed to fetch movies');
-				setTrendingMovies([]);
+				setErrorMessage(data.Error || 'Failed to fetch titles');
+				setTrendingTitles([]);
 				return;
 			}
+			console.log(data.results);
 
-			setTrendingMovies(data.results?.filter((item: Movie, index: number) => (item && index < 10)) || []);
+			setTrendingTitles(data.results?.filter((item: Title, index: number) => (item && index < 10)) || []);
 		} catch (error) {
-			console.log(`Error fetching trending movies: ${error}`);
+			console.log(`Error fetching trending titles: ${error}`);
 		}
 	}
 
 	useEffect(() => {
-		fetchMovies(debouncedSearchTerm);
+		fetchTitles(debouncedSearchTerm);
 	}, [debouncedSearchTerm]);
 
 	useEffect(() => {
-		fetchTrendingMovies();
+		fetchTrendingTitles();
 	}, []);
 
 	return (
@@ -90,21 +91,21 @@ function Index() {
 					<Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 				</header>
 
-				{trendingMovies.length > 0 && (
+				{trendingTitles.length > 0 && (
 					<section className="trending">
-						<h2>Trending Movies</h2>
+						<h2>Trending Today</h2>
 						<ul>
-							{trendingMovies.map((movie: Movie, index: number) => (
-								<li key={movie.id}>
+							{trendingTitles.map((title: Title, index: number) => (
+								<li key={title.id}>
 									<p>{index + 1}</p>
-									<img src={movie.poster_path ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}` : '/no-movie.png'} alt={movie.title} />
+									<img src={title.poster_path ? `https://image.tmdb.org/t/p/w500/${title.poster_path}` : '/no-poster.png'} alt={title.title} />
 								</li>
 							))}
 						</ul>
 					</section>
 				)}
 
-				<section className="all-movies">
+				<section className="all-titles">
 					<h2>All Movies</h2>
 					{isLoading ? (
 						<Spinner />
@@ -112,8 +113,8 @@ function Index() {
 						<p className="text-red-500">{errorMessage}</p>
 					) : (
 						<ul>
-							{movieList.map((movie: Movie) => (
-								<MovieCard key={movie.id} movie={movie} />
+							{titleList.map((title: Title) => (
+								<TitleCard key={title.id} title={title} />
 							))}
 						</ul>
 					)}

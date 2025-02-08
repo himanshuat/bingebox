@@ -3,6 +3,7 @@ export interface Title {
 	backdrop_path: string
 	genre_ids: number[]
 	id: number
+	name?: string
 	original_language: string
 	original_title: string
 	overview: string
@@ -10,7 +11,7 @@ export interface Title {
 	poster_path: string
 	media_type: string
 	release_date: string
-	title: string
+	title?: string
 	video: boolean
 	vote_average: number
 	vote_count: number

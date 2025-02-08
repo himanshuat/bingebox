@@ -1,18 +1,18 @@
-import { Movie } from "../types"
+import { Title } from "../types";
 
 interface MovieCardProps {
-    movie: Movie;
+    title: Title;
 }
 
-function MovieCard({ movie:
-    { title, vote_average, poster_path, release_date, original_language }
+function MovieCard({ title:
+    { name, title, vote_average, poster_path, release_date, original_language, media_type }
 }: MovieCardProps) {
     return (
-        <div className="movie-card">
-            <img src={poster_path ? `https://image.tmdb.org/t/p/w500/${poster_path}` : '/no-movie.png'} alt={title} />
+        <div className="title-card">
+            <img src={poster_path ? `https://image.tmdb.org/t/p/w500/${poster_path}` : '/no-poster.png'} alt={title} />
 
             <div className="mt-4">
-                <h3>{title}</h3>
+                <h3>{title || name}</h3>
 
                 <div className="content">
                     <div className="rating">
@@ -27,6 +27,13 @@ function MovieCard({ movie:
                     <p className="year">
                         {release_date ? release_date.split('-')[0] : 'N/A'}
                     </p>
+
+                    {media_type && (
+                        <>
+                            <span>•</span>
+                            <p className="media-type">{media_type}</p>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
